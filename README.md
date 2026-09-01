@@ -20,7 +20,9 @@ to open the panel:
 - **Refresh** — per-parcel and refresh-all buttons are rate-limited per
   provider; buttons grey out with a countdown when the limit doesn't allow
   another attempt yet.
-- **Detail** — full event timeline, description editing, deep link to the
+- **Detail** — full event timeline, a route strip (origin → stops → latest,
+  derived from event locations) with a "Show route" button that opens browser
+  directions between those places, description editing, deep link to the
   carrier's own tracking page, delete (click twice to confirm).
 - **Settings** — notifications on/off, opt-in automatic updates, delivered
   archive duration.

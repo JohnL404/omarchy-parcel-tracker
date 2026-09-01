@@ -153,6 +153,22 @@ function activeCount(packages) {
   return n
 }
 
+// Unique, non-empty event locations in chronological order (oldest first).
+// Events arrive newest-first, so scan backwards keeping the first occurrence
+// of each location. This is the input for the detail view's route strip.
+function routeStops(events) {
+  var list = events || []
+  var out = []
+  var seen = {}
+  for (var i = list.length - 1; i >= 0; i--) {
+    var loc = String((list[i] && list[i].loc) || "").trim()
+    if (!loc || seen[loc]) continue
+    seen[loc] = true
+    out.push(loc)
+  }
+  return out
+}
+
 function notifiable(status) {
   return NOTIFIABLE_STATUSES.indexOf(status) !== -1
 }
@@ -187,6 +203,7 @@ if (typeof module !== "undefined") {
     sortPackages: sortPackages,
     pruneArchived: pruneArchived,
     activeCount: activeCount,
+    routeStops: routeStops,
     notifiable: notifiable
   }
 }

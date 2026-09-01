@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "johnl404.parcel-tracker",
   "name": "Parcel Tracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "johnl404",
   "license": "MIT",
   "description": "Track parcel deliveries across shipping providers from the bar.",
