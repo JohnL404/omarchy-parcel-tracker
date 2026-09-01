@@ -100,6 +100,20 @@ assert.equal(Model.pruneArchived([{ status: "Delivered", lastEventAt: 0, addedAt
 
 // ---- misc
 assert.equal(Model.activeCount([{ status: "Delivered" }, { status: "InTransit" }, { status: "Exception" }]), 2)
+
+// ---- route stops (unique, chronological, oldest first)
+assert.deepEqual(Model.routeStops([]), [])
+assert.deepEqual(Model.routeStops([{ loc: "" }, { loc: "  " }]), [])
+assert.deepEqual(
+  Model.routeStops([
+    { t: 3, loc: "Brooklyn, NY" },
+    { t: 2, loc: "Frankfurt" },
+    { t: 1, loc: "Hamburg" },
+    { t: 0, loc: "Frankfurt" }
+  ]),
+  ["Frankfurt", "Hamburg", "Brooklyn, NY"]
+)
+assert.deepEqual(Model.routeStops([{ loc: "Only one" }]), ["Only one"])
 assert.ok(Model.notifiable("Delivered") && Model.notifiable("OutForDelivery"))
 assert.ok(!Model.notifiable("InTransit"))
 assert.match(Model.makeId(), /^[0-9a-z]+$/)

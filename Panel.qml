@@ -540,6 +540,19 @@ Panel {
     Qt.openUrlExternally(url)
   }
 
+  // Route deep link: Google Maps directions from the oldest to the newest
+  // event location. User-initiated browser navigation only — the shell
+  // itself makes no request.
+  function openRoute(pkg) {
+    if (!pkg) return
+    var stops = Model.routeStops(pkg.events)
+    if (stops.length < 2) return
+    var url = "https://www.google.com/maps/dir/?api=1&origin="
+      + encodeURIComponent(stops[0])
+      + "&destination=" + encodeURIComponent(stops[stops.length - 1])
+    Qt.openUrlExternally(url)
+  }
+
   function setDescription(id, text) {
     for (var i = 0; i < pkgList.length; i++)
       if (pkgList[i].id === id) pkgList[i].description = String(text || "").trim()
@@ -986,6 +999,88 @@ Panel {
     }
   }
 
+  component RouteStrip: Column {
+    id: routeRoot
+    width: parent.width
+    spacing: Style.space(4)
+    visible: !!routeRoot.pkg && routeRoot.stops.length >= 2
+
+    property var pkg: null
+    readonly property var stops: Model.routeStops(routeRoot.pkg ? routeRoot.pkg.events : [])
+
+    Row {
+      width: parent.width
+      height: routeLabel.implicitHeight
+
+      Text {
+        id: routeLabel
+        anchors.verticalCenter: parent.verticalCenter
+        textFormat: Text.PlainText
+        text: "Route"
+        color: Qt.darker(root.contentForeground, 1.6)
+        font.family: root.contentFontFamily
+        font.pixelSize: Style.font.caption
+        font.bold: true
+      }
+
+      Item { width: parent.width - routeLabel.implicitWidth - routeButton.width; height: parent.height }
+
+      PanelActionButton {
+        id: routeButton
+        iconText: "󰴠" // map-marker-path
+        tooltipText: "Show route in browser"
+        foreground: root.contentForeground
+        fontFamily: root.contentFontFamily
+        onClicked: root.openRoute(routeRoot.pkg)
+      }
+    }
+
+    Flow {
+      width: parent.width
+      spacing: Style.space(4)
+
+        Repeater {
+          id: routeRepeater
+          model: {
+            var s = routeRoot.stops
+            var items = []
+            if (s.length > 4)
+              items = [{ text: s[0] }, { dots: s.length - 2 }, { text: s[s.length - 1] }]
+            else
+              for (var i = 0; i < s.length; i++) items.push({ text: s[i] })
+            return items
+          }
+
+        delegate: Row {
+          required property int index
+          required property var modelData
+          spacing: Style.space(4)
+
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            textFormat: Text.PlainText
+            text: modelData.dots
+              ? "󰇘 " + modelData.dots + (modelData.dots === 1 ? " stop" : " stops")
+              : modelData.text
+            color: modelData.dots ? Qt.darker(root.contentForeground, 2.2) : Qt.darker(root.contentForeground, 1.6)
+            font.family: root.contentFontFamily
+            font.pixelSize: Style.font.caption
+          }
+
+          Text {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: index < routeRepeater.count - 1
+            textFormat: Text.PlainText
+            text: "󰅂"
+            color: Qt.darker(root.contentForeground, 2.2)
+            font.family: root.contentFontFamily
+            font.pixelSize: Style.font.caption
+          }
+        }
+      }
+    }
+}
+
   component DetailContents: Column {
     id: detailRoot
     width: parent.width
@@ -1177,6 +1272,8 @@ Panel {
     }
 
     Rectangle { width: parent.width; height: Style.spacing.hairline; color: root.contentForeground; opacity: 0.1 }
+
+    RouteStrip { pkg: detailRoot.pkg }
 
     // Timeline
     Column {
